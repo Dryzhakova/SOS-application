@@ -20,6 +20,10 @@ import kotlin.math.sqrt
 
 class MainActivity : ComponentActivity() {
 
+    // MiniTasks:
+    // 1. Пока что таймер просто запускается, но его никак не выключить. Кроме как, кнопкой TurnOff
+
+
     private lateinit var accelerometerListener: AccelerometerListener
     private lateinit var locationHelper: LocationHelper
     private lateinit var smsSender: SMS
@@ -35,7 +39,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
-
+        // initialization buttons and TextView
         turnOn = findViewById(R.id.turnOnButton)
         turnOff = findViewById(R.id.turnOffButton)
         status = findViewById(R.id.statusTextView)
