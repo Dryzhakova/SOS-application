@@ -8,6 +8,16 @@
 
     <!-- Ваши элементы пользовательского интерфейса здесь -->
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
     <Button
         android:id="@+id/turnOnButton"
         android:layout_width="wrap_content"

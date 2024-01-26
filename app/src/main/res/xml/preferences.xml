@@ -1,0 +1,32 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="Sensivity">
+
+        <SeekBarPreference
+            android:key="accelerometer_sensitivity"
+            android:title="@string/preferences_acc"
+            android:summary="Adjust the sensitivity of the accelerometer"
+            android:defaultValue="5"
+            android:max="1000"
+            android:progress="5"
+            app:showSeekBarValue="true"
+            android:dialogMessage="Adjust the accelerometer sensitivity"
+            />
+
+
+
+        <SeekBarPreference
+            android:key="gps_sensitivity"
+            android:title="@string/preferences_gps"
+            android:summary="@string/preferences_gps_summary"
+            android:defaultValue="10"
+            android:max="100000"
+            android:progress="100"
+            app:showSeekBarValue="true"
+            android:dialogMessage="@string/preferences_gps_dialogmessage"
+            />
+
+
+    </PreferenceCategory>
+</PreferenceScreen>
