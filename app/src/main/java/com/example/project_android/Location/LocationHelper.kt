@@ -12,7 +12,6 @@ class LocationHelper(context: Context, private val onLocationChanged: (Double, D
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             onLocationChanged(location.latitude, location.longitude)
-            stopLocationUpdates()
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}

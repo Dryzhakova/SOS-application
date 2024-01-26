@@ -33,6 +33,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var turnOff : Button
     private lateinit var status : TextView
 
+    private lateinit var gpsTextView: TextView
+    private lateinit var accTextView: TextView
+
     private var lastAcceleration: FloatArray? = null
     private var lastLocation: Pair<Double, Double>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +46,8 @@ class MainActivity : ComponentActivity() {
         turnOn = findViewById(R.id.turnOnButton)
         turnOff = findViewById(R.id.turnOffButton)
         status = findViewById(R.id.statusTextView)
-
+        gpsTextView = findViewById(R.id.gpsTextView)
+        accTextView = findViewById(R.id.accTextView)
 
 
 
@@ -122,12 +126,14 @@ class MainActivity : ComponentActivity() {
             if (accelerationChange > threshold) {
                 // Изменились данные акселерометра
                 lastAcceleration = acceleration
+                accTextView.text = "Acceleration: $lastAcceleration"
                 return true
             }
         }
 
         // Сохранение новых данных акселерометра(обновляются каждые 200 мс)
         lastAcceleration = acceleration
+        accTextView.text = "Acceleration: $lastAcceleration"
         return false
     }
 
@@ -156,13 +162,18 @@ class MainActivity : ComponentActivity() {
             if (deltaLatitude > threshold || deltaLongitude > threshold) {
                 // Изменились данные GPS
                 lastLocation = Pair(latitude, longitude)
-                showFallDetectedDialog()
+
+                gpsTextView.text = "GPS: $lastLocation"
+
+                // For Testing
+               // showFallDetectedDialog()
                 return true
             }
         }
 
         // Сохраняем текущие значения координат
         lastLocation = Pair(latitude, longitude)
+        gpsTextView.text = "GPS: $lastLocation"
         return false
     }
 

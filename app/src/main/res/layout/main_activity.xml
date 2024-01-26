@@ -37,6 +37,34 @@
         android:layout_height="108dp"
         android:gravity="center"
         android:text="Status: "
-        tools:layout_editor_absoluteX="135dp"
-        tools:layout_editor_absoluteY="83dp" />
+        app:layout_constraintBottom_toTopOf="@+id/accTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.683" />
+
+    <TextView
+        android:id="@+id/accTextView"
+        android:layout_width="304dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="32dp"
+        android:gravity="center"
+        android:text="Acceleration: Empty"
+        app:layout_constraintBottom_toTopOf="@+id/gpsTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/gpsTextView"
+        android:layout_width="304dp"
+        android:layout_height="58dp"
+        android:layout_marginBottom="64dp"
+        android:gravity="center"
+        android:text="GPS: Empty"
+        app:layout_constraintBottom_toTopOf="@+id/turnOnButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
