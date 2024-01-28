@@ -12,6 +12,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.SensorManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -30,6 +32,9 @@ class MainActivity : AppCompatActivity() {
 
     // MiniTasks:
     // 1. Пока что таймер просто запускается, но его никак не выключить. Кроме как, кнопкой TurnOff
+
+    private var shakeTimerHandler = Handler(Looper.getMainLooper())
+    private var shakeTimerRunnable: Runnable? = null
 
 
     private lateinit var accelerometerListener: AccelerometerListener
@@ -64,31 +69,37 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        if(checkPermissions()) {
-            accelerometerListener = AccelerometerListener(this) { acceleration ->
-                onAccelerationChanged(acceleration)
-            }
 
-            locationHelper = LocationHelper(this) { latitude, longitude ->
-                if (checkLocation(latitude, longitude)) {
-                    timer.startTimer(30000) // 30 секунд
-                }
-            }
-        }
 
-        smsSender = SMS(this)
 
-        timer = Timer {
-            showFallDetectedDialog()
-            smsSender.sendSMS("Началась тревога!")
-        }
 
 
         turnOn.setOnClickListener {
-            // Включение слушателей и т.д.
-            status.text = "Система включена"
-            accelerometerListener.register()
-            locationHelper.requestLocationUpdates()
+            if (checkPermissions()) {
+                accelerometerListener = AccelerometerListener(this) { acceleration ->
+                    onAccelerationChanged(acceleration)
+                }
+
+                locationHelper = LocationHelper(this) { latitude, longitude ->
+                    if (checkLocation(latitude, longitude)) {
+                        timer.startTimer(30000) // 30 секунд
+                    }
+                }
+
+                smsSender = SMS(this)
+
+                timer = Timer {
+                    showFallDetectedDialog()
+                    smsSender.sendSMS("Началась тревога!")
+                }
+
+                // Включение слушателей и т.д.
+                status.text = "Система включена"
+                accelerometerListener.register()
+            } else {
+                // Обработка случая, когда разрешения не получены
+                // Можете вывести сообщение или выполнить другие действия
+            }
         }
 
         turnOff.setOnClickListener {
@@ -148,9 +159,27 @@ class MainActivity : AppCompatActivity() {
     // При изменении данных с акселерометра вызывает проверку GPS
     private fun onAccelerationChanged(acceleration: FloatArray) {
         if (checkAcceleration(acceleration)) {
-            locationHelper.requestLocationUpdates()
+            startShakeTimer()
         }
     }
+
+
+    private fun startShakeTimer() {
+        // Отменяем предыдущий таймер, если он существует
+        shakeTimerRunnable?.let { shakeTimerHandler.removeCallbacks(it) }
+
+        // Создаем новый таймер на 3 секунды
+        shakeTimerRunnable = Runnable {
+            // Если второй встряски нет, вызываем locationHelper.requestLocationUpdates()
+            showFallDetectedDialog()
+            locationHelper.requestLocationUpdates()
+            shakeTimerRunnable = null // Обнуляем runnable, так как таймер выполнен
+        }
+
+        shakeTimerHandler.postDelayed(shakeTimerRunnable!!, 3000) // 3000 мс = 3 секунды
+    }
+
+
 
 
     private fun checkAcceleration(acceleration: FloatArray): Boolean {
@@ -217,7 +246,6 @@ class MainActivity : AppCompatActivity() {
 
                 // For Testing
                 Log.d("GPS", "Сработало GPS!")
-                showFallDetectedDialog()
                 return true
             }
             Log.d("GPS", "No location")
@@ -231,7 +259,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        accelerometerListener.register()
+        if (::accelerometerListener.isInitialized) {
+            accelerometerListener.register()
+        }
 
     }
 
