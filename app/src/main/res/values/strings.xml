@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">Project_Android</string>
-    <string name="preferences_acc">"Accelerometer Sensitivity"</string>
-    <string name="preferences_gps">"GPS Sensitivity"</string>
-    <string name="preferences_acc_summary">"Adjust the sensitivity of the accelerometer"</string>
-    <string name="preferences_gps_summary">"Adjust the sensitivity of the GPS"</string>
-    <string name="preferences_gps_dialogmessage">"Adjust the GPS sensitivity"</string>
-    <string name="preferences_acc_dialogmessage">"Adjust the accelerometer sensitivity"</string>
-</resources>
