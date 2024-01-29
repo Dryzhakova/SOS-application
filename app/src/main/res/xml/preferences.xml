@@ -35,7 +35,7 @@
             android:summary="Tap to configure contacts" />
 
         <EditTextPreference
-            android:defaultValue="Default value"
+            android:defaultValue=""
             android:key="message_text"
             android:selectAllOnFocus="true"
             android:singleLine="true"

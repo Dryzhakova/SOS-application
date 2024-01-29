@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -52,7 +53,9 @@ class BackgroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Вызывается при старте службы
-
+        if (intent?.action == "TURN_OFF_ACTION") {
+            turnOFF()
+        }
 
 
         Log.d("MainActivity", "Кракен готовится")
@@ -251,13 +254,23 @@ class BackgroundService : Service() {
                 notificationManager.createNotificationChannel(channel)
             }
 
+            val notificationIntent = Intent(this, BackgroundService::class.java)
+            notificationIntent.action = "TURN_OFF_ACTION" // Уникальный action для вашего PendingIntent
+            val pendingIntent = PendingIntent.getService(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+
             val builder = NotificationCompat.Builder(this, channelId)
                 .setContentTitle("Foreground Service")
                 .setContentText("Service is running in foreground")
-                .setSmallIcon(R.drawable.ic_launcher_background)  // Укажите свою иконку уведомления
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentIntent(pendingIntent)// Укажите свою иконку уведомления
 
             return builder.build()
         }
+
+    private fun turnOFF(){
+        locationHelper.stopLocationUpdates()
+        timer.cancelTimer()
+    }
 }
 
 

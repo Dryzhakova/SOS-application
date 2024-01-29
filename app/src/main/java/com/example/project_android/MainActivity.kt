@@ -116,16 +116,21 @@ class MainActivity : AppCompatActivity() {
         toggleButton.setOnClickListener {
             if (isTimerStarted) {
                 // Code to perform action when turning OFF
-                status.text = "System turned OFF"
+                status.text = "Status: System turned OFF"
                 val serviceIntent = Intent(this, BackgroundService::class.java)
                 stopService(serviceIntent)
             } else {
                 // Code to perform action when turning ON
                 if (checkPermissions()) {
-                    status.text = "System turned ON"
-                    val serviceIntent = Intent(this, BackgroundService::class.java)
-                    startService(serviceIntent)
-                    Log.d("MainActivity", "Kraken is on the hunt")
+                    if(ContactsDetails.number != "" && ContactsDetails.message != "") {
+                        status.text = "Status: System turned ON"
+                        val serviceIntent = Intent(this, BackgroundService::class.java)
+                        startService(serviceIntent)
+                        Log.d("MainActivity", "Kraken is on the hunt")
+                    }else{
+                        showErrorNameMessage()
+
+                    }
                 } else {
                     // Handle case when permissions are not granted
                 }
@@ -234,6 +239,15 @@ class MainActivity : AppCompatActivity() {
             Toast.LENGTH_SHORT
         ).show()
     }
+    private fun showErrorNameMessage() {
+        Toast.makeText(
+            this,
+            "Не вписаны номер телефона и сообщение",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+
 
 
 
