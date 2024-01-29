@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
+import com.example.project_android.Contacts.ContactsDetails
 import com.example.project_android.Timer.Timer
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -63,12 +64,15 @@ class MainActivity : AppCompatActivity() {
 
     private val requestCodePermissions = 123
 
+    public lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var accelerometerListener: AccelerometerListener
     private lateinit var locationHelper: LocationHelper
     private lateinit var smsSender: SMS
     private lateinit var timer: Timer
     // Elements of layout //
+
+    private lateinit var toggleButton : Button
     private lateinit var turnOn : Button
     private lateinit var turnOff : Button
     private lateinit var status : TextView
@@ -86,38 +90,45 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+
         // initialization buttons and TextView
-        turnOn = findViewById(R.id.turnOnButton)
-        turnOff = findViewById(R.id.turnOffButton)
+        toggleButton = findViewById(R.id.toggleButton)
         status = findViewById(R.id.statusTextView)
         gpsTextView = findViewById(R.id.gpsTextView)
         accTextView = findViewById(R.id.accTextView)
 
 
+        ContactsDetails.message = sharedPreferences.getString("selected_message", "").toString()
+        ContactsDetails.number = sharedPreferences.getString("selected_contact_number", "").toString()
+
+
+        Log.d("Message", ContactsDetails.message)
+        Log.d("Message", ContactsDetails.number)
 
 
 
 
 
 
-
-
-        turnOn.setOnClickListener {
-            if (checkPermissions()) {
+        toggleButton.setOnClickListener {
+            if (isTimerStarted) {
+                // Code to perform action when turning OFF
+                status.text = "System turned OFF"
                 val serviceIntent = Intent(this, BackgroundService::class.java)
-                startService(serviceIntent)
-                Log.d("MainActivity", "Кракен вышел на охоту")
+                stopService(serviceIntent)
             } else {
-                // Обработка случая, когда разрешения не получены
-                // Можете вывести сообщение или выполнить другие действия
+                // Code to perform action when turning ON
+                if (checkPermissions()) {
+                    val serviceIntent = Intent(this, BackgroundService::class.java)
+                    startService(serviceIntent)
+                    Log.d("MainActivity", "Kraken is on the hunt")
+                } else {
+                    // Handle case when permissions are not granted
+                }
             }
-        }
-
-        turnOff.setOnClickListener {
-            // Выключение слушателей и т.д.
-            status.text = "Система выключена"
-            val serviceIntent = Intent(this, BackgroundService::class.java)
-            stopService(serviceIntent)
+            // Toggle the state
+            isTimerStarted = !isTimerStarted
         }
 
 

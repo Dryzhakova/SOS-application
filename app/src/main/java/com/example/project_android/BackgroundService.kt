@@ -20,8 +20,10 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.preference.PreferenceManager
 import com.example.project_android.Accelerometer.AccelerometerListener
+import com.example.project_android.Contacts.ContactsDetails
 import com.example.project_android.Location.LocationHelper
 import com.example.project_android.MainActivity
 import com.example.project_android.Message.SMS
@@ -30,11 +32,11 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 class BackgroundService : Service() {
-
     private lateinit var accelerometerListener: AccelerometerListener
     private lateinit var locationHelper: LocationHelper
     private lateinit var smsSender: SMS
     private lateinit var timer: Timer
+
 
     private var shakeTimerHandler = Handler(Looper.getMainLooper())
     private var shakeTimerRunnable: Runnable? = null
@@ -42,17 +44,29 @@ class BackgroundService : Service() {
 
     private var lastAcceleration: FloatArray? = null
     private var lastLocation: Pair<Double, Double>? = null
-
+    private lateinit var sharedPreferences: SharedPreferences
 
     companion object {
         private const val NOTIFICATION_ID = 1
     }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Вызывается при старте службы
+
+
+
         Log.d("MainActivity", "Кракен готовится")
 
-        val notification = createNotification()  // Создайте уведомление, которое будет отображаться в статус-баре
-        startForeground(NOTIFICATION_ID, notification)
+
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+
+        val message = sharedPreferences.getString(SettingsActivity.PREFS_KEY_SELECTED_MESSAGE, "")
+        ContactsDetails.message = message.toString()
+        val number = sharedPreferences.getString(SettingsActivity.PREFS_KEY_SELECTED_CONTACT_NUMBER, "")
+        ContactsDetails.number = number.toString()
+
+
 
         accelerometerListener = AccelerometerListener(this) { acceleration ->
             onAccelerationChanged(acceleration)
@@ -68,14 +82,23 @@ class BackgroundService : Service() {
 
         timer = Timer {
 //            showFallDetectedDialog()
-            smsSender.sendSMS("Началась тревога!")
+            smsSender.sendSMS("", "")
         }
 
         accelerometerListener.register()
 
 
+
+
+        val notification =
+            createNotification()  // Создайте уведомление, которое будет отображаться в статус-баре
+        startForeground(NOTIFICATION_ID, notification)
+
+
         // Обработка случая, когда разрешения не получены
 
+
+//        loadSelectedContact()
 
         return START_STICKY // Служба будет перезапущена в случае ее аварийной остановки
     }
@@ -93,12 +116,13 @@ class BackgroundService : Service() {
     }
 
 
-
     private fun onAccelerationChanged(acceleration: FloatArray) {
         if (checkAcceleration(acceleration)) {
             startShakeTimer()
         }
     }
+
+//
 
     private fun startShakeTimer() {
         shakeTimerRunnable?.let { shakeTimerHandler.removeCallbacks(it) }
@@ -122,10 +146,13 @@ class BackgroundService : Service() {
             // Retrieve the accelerometer sensitivity directly as an integer
             val accelerometerSensitivity: Int = try {
                 preferences.getInt("accelerometer_sensitivity", 5)
+
+
             } catch (e: ClassCastException) {
                 // Handle exception, if necessary
                 5
             }
+
             if (accelerationChange > accelerometerSensitivity) {
                 // Изменились данные акселерометра
                 Log.d("Ac", "Сработало acceleration!")
@@ -137,21 +164,27 @@ class BackgroundService : Service() {
 
         // Сохранение новых данных акселерометра(обновляются каждые 200 мс)
         lastAcceleration = acceleration
-        val accelerationString = "x: ${acceleration[0]}, y: ${acceleration[1]}, z: ${acceleration[2]}"
+        val accelerationString =
+            "x: ${acceleration[0]}, y: ${acceleration[1]}, z: ${acceleration[2]}"
 
 
         return false
     }
 
-    private fun calculateAccelerationChange(acceleration1: FloatArray, acceleration2: FloatArray): Double {
+    private fun calculateAccelerationChange(
+        acceleration1: FloatArray,
+        acceleration2: FloatArray
+    ): Double {
         val deltaAcceleration = FloatArray(3)
         for (i in 0 until 3) {
             deltaAcceleration[i] = acceleration1[i] - acceleration2[i]
         }
 
-        val value = sqrt((deltaAcceleration[0] * deltaAcceleration[0]
-                + deltaAcceleration[1] * deltaAcceleration[1]
-                + deltaAcceleration[2] * deltaAcceleration[2]).toDouble())
+        val value = sqrt(
+            (deltaAcceleration[0] * deltaAcceleration[0]
+                    + deltaAcceleration[1] * deltaAcceleration[1]
+                    + deltaAcceleration[2] * deltaAcceleration[2]).toDouble()
+        )
         return value
 
     }
@@ -166,10 +199,11 @@ class BackgroundService : Service() {
             val gpsSensitivity: Double =
                 (preferences.getInt("gps_sensitivity", 10) * 0.00001)
 
+
+
             if (deltaLatitude > gpsSensitivity || deltaLongitude > gpsSensitivity) {
                 // Изменились данные GPS
                 lastLocation = Pair(latitude, longitude)
-
 
 
                 // For Testing
@@ -178,43 +212,55 @@ class BackgroundService : Service() {
             }
             Log.d("GPS", "No location")
             lastLocation = Pair(latitude, longitude)
-
-            if(!isTimerStarted) {
+            if (!isTimerStarted) {
                 val timer = Timer {
-                    smsSender.sendSMS("Test")
+
+                    smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
+
+
+
+
                 }
                 isTimerStarted = true
                 timer.startTimer(5000)
 
+                return true
             }
 
-            return true
         }
 
         // Сохраняем текущие значения координат
-        lastLocation = Pair(latitude, longitude)
+            lastLocation = Pair(latitude, longitude)
 
-        return false
-    }
-
-
-    private fun createNotification(): Notification {
-        val channelId = "your_channel_id"
-        val channelName = "Your Channel Name"
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
-            notificationManager.createNotificationChannel(channel)
+            return false
         }
 
-        val builder = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Foreground Service")
-            .setContentText("Service is running in foreground")
-            .setSmallIcon(R.drawable.ic_launcher_background)  // Укажите свою иконку уведомления
 
-        return builder.build()
-    }
+        private fun createNotification(): Notification {
+            val channelId = "1"
+            val channelName = "Name"
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    channelId,
+                    channelName,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            val builder = NotificationCompat.Builder(this, channelId)
+                .setContentTitle("Foreground Service")
+                .setContentText("Service is running in foreground")
+                .setSmallIcon(R.drawable.ic_launcher_background)  // Укажите свою иконку уведомления
+
+            return builder.build()
+        }
+}
+
+
 
 //    private fun showFallDetectedDialog() {
 //        val builder = AlertDialog.Builder(this)
@@ -230,4 +276,5 @@ class BackgroundService : Service() {
 //        }
 //        builder.show()
 //    }
-}
+
+

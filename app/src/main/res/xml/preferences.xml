@@ -27,6 +27,21 @@
             android:dialogMessage="@string/preferences_gps_dialogmessage"
             />
 
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Contacts and message">
+        <Preference
+            android:key="contacts_button"
+            android:title="Choose contact"
+            android:summary="Tap to configure contacts" />
+
+        <EditTextPreference
+            android:defaultValue="Default value"
+            android:key="message_text"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Edit message" />
+
 
     </PreferenceCategory>
+
 </PreferenceScreen>

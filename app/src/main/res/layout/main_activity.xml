@@ -19,32 +19,20 @@
 
 
     <Button
-        android:id="@+id/turnOnButton"
+        android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Turn ON"
-        app:layout_constraintBottom_toTopOf="@+id/turnOffButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.938" />
-
-    <Button
-        android:id="@+id/turnOffButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="112dp"
-        android:text="Turn Off"
+        android:layout_marginBottom="188dp"
+        android:text="Toggle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/statusTextView"
         android:layout_width="140dp"
         android:layout_height="108dp"
+        android:layout_marginTop="100dp"
         android:gravity="center"
         android:text="Status: "
         app:layout_constraintBottom_toTopOf="@+id/accTextView"
@@ -52,13 +40,13 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.683" />
+        app:layout_constraintVertical_bias="0.042" />
 
     <TextView
         android:id="@+id/accTextView"
         android:layout_width="304dp"
         android:layout_height="55dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="52dp"
         android:gravity="center"
         android:text="Acceleration: Empty"
         app:layout_constraintBottom_toTopOf="@+id/gpsTextView"
@@ -70,10 +58,10 @@
         android:id="@+id/gpsTextView"
         android:layout_width="304dp"
         android:layout_height="58dp"
-        android:layout_marginBottom="64dp"
+        android:layout_marginBottom="56dp"
         android:gravity="center"
         android:text="GPS: Empty"
-        app:layout_constraintBottom_toTopOf="@+id/turnOnButton"
+        app:layout_constraintBottom_toTopOf="@+id/toggleButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent" />
