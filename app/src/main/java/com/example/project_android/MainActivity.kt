@@ -41,8 +41,17 @@ class MainActivity : AppCompatActivity() {
     private var shakeTimerRunnable: Runnable? = null
     private var isTimerStarted : Boolean = false
 
+    val permissionsBelowAndroid14 = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.SEND_SMS,
+        Manifest.permission.READ_CONTACTS
+    )
+
+    // Для Android 14 и выше
+
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    val permissions = arrayOf(
+    val permissionsAndroid14AndAbove = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.SEND_SMS,
@@ -69,7 +78,7 @@ class MainActivity : AppCompatActivity() {
 
     private var lastAcceleration: FloatArray? = null
     private var lastLocation: Pair<Double, Double>? = null
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -107,9 +116,8 @@ class MainActivity : AppCompatActivity() {
         turnOff.setOnClickListener {
             // Выключение слушателей и т.д.
             status.text = "Система выключена"
-            accelerometerListener.unregister()
-            locationHelper.stopLocationUpdates()
-            timer.cancelTimer()
+            val serviceIntent = Intent(this, BackgroundService::class.java)
+            stopService(serviceIntent)
         }
 
 
@@ -144,23 +152,28 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun checkPermissions(): Boolean {
         val missingPermissions = getMissingPermissions()
 
         if (missingPermissions.isNotEmpty()) {
             requestPermissions(missingPermissions)
+            return false
         } else {
             return true
         }
-        return false
     }
 
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+
     private fun getMissingPermissions(): Array<String> {
         val missingPermissions = mutableListOf<String>()
 
-        for (permission in permissions) {
+        val currentPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            permissionsAndroid14AndAbove
+        } else {
+            permissionsBelowAndroid14
+        }
+
+        for (permission in currentPermissions) {
             if (ContextCompat.checkSelfPermission(this, permission)
                 != PackageManager.PERMISSION_GRANTED
             ) {
@@ -207,6 +220,7 @@ class MainActivity : AppCompatActivity() {
             Toast.LENGTH_SHORT
         ).show()
     }
+
 
 
     // При изменении данных с акселерометра вызывает проверку GPS

