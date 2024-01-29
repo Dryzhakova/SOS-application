@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     private var shakeTimerHandler = Handler(Looper.getMainLooper())
     private var shakeTimerRunnable: Runnable? = null
+    private var isTimerStarted : Boolean = false
+
 
 
     private lateinit var accelerometerListener: AccelerometerListener
@@ -82,7 +84,7 @@ class MainActivity : AppCompatActivity() {
 
                 locationHelper = LocationHelper(this) { latitude, longitude ->
                     if (checkLocation(latitude, longitude)) {
-                        timer.startTimer(30000) // 30 секунд
+
                     }
                 }
 
@@ -172,6 +174,7 @@ class MainActivity : AppCompatActivity() {
         shakeTimerRunnable = Runnable {
             // Если второй встряски нет, вызываем locationHelper.requestLocationUpdates()
             showFallDetectedDialog()
+            isTimerStarted = false
             locationHelper.requestLocationUpdates()
             shakeTimerRunnable = null // Обнуляем runnable, так как таймер выполнен
         }
@@ -229,7 +232,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun checkLocation(latitude: Double, longitude: Double): Boolean {
-        // Проверяем изменение координат
+
         if (lastLocation != null) {
             val deltaLatitude = abs(latitude - lastLocation!!.first)
             val deltaLongitude = abs(longitude - lastLocation!!.second)
@@ -246,9 +249,21 @@ class MainActivity : AppCompatActivity() {
 
                 // For Testing
                 Log.d("GPS", "Сработало GPS!")
-                return true
+                return false
             }
             Log.d("GPS", "No location")
+            lastLocation = Pair(latitude, longitude)
+            gpsTextView.text = "GPS: $lastLocation"
+            if(!isTimerStarted) {
+                val timer = Timer {
+                    smsSender.sendSMS("Test")
+                }
+                isTimerStarted = true
+                timer.startTimer(5000)
+
+            }
+
+            return true
         }
 
         // Сохраняем текущие значения координат

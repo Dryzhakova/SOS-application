@@ -1,6 +1,7 @@
 package com.example.project_android.Timer
 
 import android.os.CountDownTimer
+import android.util.Log
 
 class Timer(private val onTimerComplete: () -> Unit) {
 
@@ -9,7 +10,9 @@ class Timer(private val onTimerComplete: () -> Unit) {
     fun startTimer(milliseconds: Long) {
         countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer(milliseconds, 1000) {
-            override fun onTick(millisUntilFinished: Long) {}
+            override fun onTick(millisUntilFinished: Long) {
+                Log.d("Timer", "Tick: $millisUntilFinished")
+            }
 
             override fun onFinish() {
                 onTimerComplete()
