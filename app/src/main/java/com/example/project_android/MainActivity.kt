@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.SEND_SMS,
-        Manifest.permission.READ_CONTACTS
+        Manifest.permission.READ_CONTACTS,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
     // Для Android 14 и выше
@@ -59,7 +60,8 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.READ_CONTACTS,
         Manifest.permission.FOREGROUND_SERVICE_LOCATION,
         Manifest.permission.FOREGROUND_SERVICE,
-        Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC
+        Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
     private val requestCodePermissions = 123
@@ -120,6 +122,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // Code to perform action when turning ON
                 if (checkPermissions()) {
+                    status.text = "System turned ON"
                     val serviceIntent = Intent(this, BackgroundService::class.java)
                     startService(serviceIntent)
                     Log.d("MainActivity", "Kraken is on the hunt")
