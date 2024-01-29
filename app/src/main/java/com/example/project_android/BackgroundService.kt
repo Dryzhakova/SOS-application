@@ -77,7 +77,7 @@ class BackgroundService : Service() {
 
         locationHelper = LocationHelper(this) { latitude, longitude ->
             if (checkLocation(latitude, longitude)) {
-
+                locationHelper.stopLocationUpdates()
             }
         }
 
@@ -202,7 +202,8 @@ class BackgroundService : Service() {
             val gpsSensitivity: Double =
                 (preferences.getInt("gps_sensitivity", 10) * 0.00001)
 
-
+            val count : Int = (preferences.getInt("set_timer", 10) * 1000)
+            Log.d("Message", count.toString())
 
             if (deltaLatitude > gpsSensitivity || deltaLongitude > gpsSensitivity) {
                 // Изменились данные GPS
@@ -225,7 +226,7 @@ class BackgroundService : Service() {
 
                 }
                 isTimerStarted = true
-                timer.startTimer(5000)
+                timer.startTimer(count.toLong())
 
                 return true
             }

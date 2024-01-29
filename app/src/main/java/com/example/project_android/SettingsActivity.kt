@@ -57,17 +57,21 @@ class SettingsActivity : AppCompatActivity() {
 
 
             // Change value of Seekbar if user enter value
-            val editTextPref = findPreference<EditTextPreference>("accelerometer_sensitivity_manual")
+
             val seekBarPref = findPreference<SeekBarPreference>("accelerometer_sensitivity")
             val message_Button = findPreference<EditTextPreference>("message_text")
+            val setTimer = findPreference<SeekBarPreference>("set_timer")
 
-            editTextPref?.setOnPreferenceChangeListener { _, newValue ->
-                // Обновление значения SeekBarPreference при изменении EditTextPreference
-                seekBarPref?.value = (newValue as String).toInt()
-                seekBarPref?.setValue((newValue as String).toInt())
+
+
+            setTimer?.setOnPreferenceChangeListener{_, newValue ->
+                val value = newValue as Int
+                Log.d("Timer", value.toString())
                 true
 
             }
+
+
 
             val accelerometerPreference = findPreference<SeekBarPreference>("accelerometer_sensitivity")
             val gpsPreference = findPreference<SeekBarPreference>("gps_sensitivity")

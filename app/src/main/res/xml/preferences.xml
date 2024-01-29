@@ -40,6 +40,20 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="Edit message" />
+        <PreferenceCategory android:title="Timer">
+
+            <SeekBarPreference
+                android:key="set_timer"
+                android:title="Set timer"
+                android:summary="Adjust the duration for your timer"
+                android:defaultValue="10"
+                android:max="60"
+                android:progress="5"
+                app:showSeekBarValue="true"
+                android:dialogMessage="Adjust the accelerometer sensitivity"
+                />
+
+        </PreferenceCategory>
 
 
     </PreferenceCategory>
