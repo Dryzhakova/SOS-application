@@ -1,6 +1,7 @@
 package com.example.project_android
 
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import com.example.project_android.Accelerometer.AccelerometerListener
@@ -12,6 +13,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -19,6 +21,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -37,6 +41,18 @@ class MainActivity : AppCompatActivity() {
     private var shakeTimerRunnable: Runnable? = null
     private var isTimerStarted : Boolean = false
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    val permissions = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.SEND_SMS,
+        Manifest.permission.READ_CONTACTS,
+        Manifest.permission.FOREGROUND_SERVICE_LOCATION,
+        Manifest.permission.FOREGROUND_SERVICE,
+        Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC
+    )
+
+    private val requestCodePermissions = 123
 
 
     private lateinit var accelerometerListener: AccelerometerListener
@@ -53,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
     private var lastAcceleration: FloatArray? = null
     private var lastLocation: Pair<Double, Double>? = null
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -78,26 +95,9 @@ class MainActivity : AppCompatActivity() {
 
         turnOn.setOnClickListener {
             if (checkPermissions()) {
-                accelerometerListener = AccelerometerListener(this) { acceleration ->
-                    onAccelerationChanged(acceleration)
-                }
-
-                locationHelper = LocationHelper(this) { latitude, longitude ->
-                    if (checkLocation(latitude, longitude)) {
-
-                    }
-                }
-
-                smsSender = SMS(this)
-
-                timer = Timer {
-                    showFallDetectedDialog()
-                    smsSender.sendSMS("Началась тревога!")
-                }
-
-                // Включение слушателей и т.д.
-                status.text = "Система включена"
-                accelerometerListener.register()
+                val serviceIntent = Intent(this, BackgroundService::class.java)
+                startService(serviceIntent)
+                Log.d("MainActivity", "Кракен вышел на охоту")
             } else {
                 // Обработка случая, когда разрешения не получены
                 // Можете вывести сообщение или выполнить другие действия
@@ -140,168 +140,108 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Checking Permissions
-    private fun checkPermissions(): Boolean{
-        val permissions = arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.SEND_SMS,
-            Manifest.permission.READ_CONTACTS
-        )
 
-        for(permission in permissions){
-            if(ContextCompat.checkSelfPermission(this,permission)
-                != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(this, permissions, 1)
-                return false
-            }
+
+
+
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun checkPermissions(): Boolean {
+        val missingPermissions = getMissingPermissions()
+
+        if (missingPermissions.isNotEmpty()) {
+            requestPermissions(missingPermissions)
+        } else {
+            return true
         }
-        return true
-    }
-
-    // При изменении данных с акселерометра вызывает проверку GPS
-    private fun onAccelerationChanged(acceleration: FloatArray) {
-        if (checkAcceleration(acceleration)) {
-            startShakeTimer()
-        }
-    }
-
-
-    private fun startShakeTimer() {
-        // Отменяем предыдущий таймер, если он существует
-        shakeTimerRunnable?.let { shakeTimerHandler.removeCallbacks(it) }
-
-        // Создаем новый таймер на 3 секунды
-        shakeTimerRunnable = Runnable {
-            // Если второй встряски нет, вызываем locationHelper.requestLocationUpdates()
-            showFallDetectedDialog()
-            isTimerStarted = false
-            locationHelper.requestLocationUpdates()
-            shakeTimerRunnable = null // Обнуляем runnable, так как таймер выполнен
-        }
-
-        shakeTimerHandler.postDelayed(shakeTimerRunnable!!, 3000) // 3000 мс = 3 секунды
-    }
-
-
-
-
-    private fun checkAcceleration(acceleration: FloatArray): Boolean {
-        if (lastAcceleration != null) {
-            val accelerationChange = calculateAccelerationChange(acceleration, lastAcceleration!!)
-
-            val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-
-            // Retrieve the accelerometer sensitivity directly as an integer
-            val accelerometerSensitivity: Int = try {
-                preferences.getInt("accelerometer_sensitivity", 5)
-            } catch (e: ClassCastException) {
-                // Handle exception, if necessary
-                5
-            }
-            if (accelerationChange > accelerometerSensitivity) {
-                // Изменились данные акселерометра
-                Log.d("Ac", "Сработало acceleration!")
-                lastAcceleration = acceleration
-                accTextView.text = "Acceleration: $lastAcceleration"
-                return true
-            }
-        }
-
-        // Сохранение новых данных акселерометра(обновляются каждые 200 мс)
-        lastAcceleration = acceleration
-        val accelerationString = "x: ${acceleration[0]}, y: ${acceleration[1]}, z: ${acceleration[2]}"
-        accTextView.text = "Acceleration: $accelerationString"
-
         return false
     }
+
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun getMissingPermissions(): Array<String> {
+        val missingPermissions = mutableListOf<String>()
+
+        for (permission in permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                missingPermissions.add(permission)
+            }
+        }
+
+        return missingPermissions.toTypedArray()
+    }
+
+    private fun requestPermissions(permissions: Array<String>) {
+        ActivityCompat.requestPermissions(this, permissions, requestCodePermissions)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == requestCodePermissions) {
+            val deniedPermissions = mutableListOf<String>()
+
+            for ((index, result) in grantResults.withIndex()) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    deniedPermissions.add(permissions[index])
+                }
+            }
+
+            if (deniedPermissions.isNotEmpty()) {
+                showPermissionDeniedToast()
+            } else {
+                // Разрешения предоставлены
+                // Ваш код здесь
+            }
+        }
+    }
+
+    private fun showPermissionDeniedToast() {
+        Toast.makeText(
+            this,
+            "Необходимые разрешения не были предоставлены",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+
+    // При изменении данных с акселерометра вызывает проверку GPS
+
+
+
+
+
+
+
+
+
 
 
     // Method Euclidian for calculating acceleration change
-    private fun calculateAccelerationChange(acceleration1: FloatArray, acceleration2: FloatArray): Double {
-        val deltaAcceleration = FloatArray(3)
-        for (i in 0 until 3) {
-            deltaAcceleration[i] = acceleration1[i] - acceleration2[i]
-        }
-
-        val value = sqrt((deltaAcceleration[0] * deltaAcceleration[0]
-                + deltaAcceleration[1] * deltaAcceleration[1]
-                + deltaAcceleration[2] * deltaAcceleration[2]).toDouble())
-        return value
-
-    }
 
 
-    private fun checkLocation(latitude: Double, longitude: Double): Boolean {
 
-        if (lastLocation != null) {
-            val deltaLatitude = abs(latitude - lastLocation!!.first)
-            val deltaLongitude = abs(longitude - lastLocation!!.second)
 
-            val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-            val gpsSensitivity: Double =
-                (preferences.getInt("gps_sensitivity", 10) * 0.00001)
-
-            if (deltaLatitude > gpsSensitivity || deltaLongitude > gpsSensitivity) {
-                // Изменились данные GPS
-                lastLocation = Pair(latitude, longitude)
-
-                gpsTextView.text = "GPS: $lastLocation"
-
-                // For Testing
-                Log.d("GPS", "Сработало GPS!")
-                return false
-            }
-            Log.d("GPS", "No location")
-            lastLocation = Pair(latitude, longitude)
-            gpsTextView.text = "GPS: $lastLocation"
-            if(!isTimerStarted) {
-                val timer = Timer {
-                    smsSender.sendSMS("Test")
-                }
-                isTimerStarted = true
-                timer.startTimer(5000)
-
-            }
-
-            return true
-        }
-
-        // Сохраняем текущие значения координат
-        lastLocation = Pair(latitude, longitude)
-        gpsTextView.text = "GPS: $lastLocation"
-        return false
-    }
 
     override fun onResume() {
         super.onResume()
-        if (::accelerometerListener.isInitialized) {
-            accelerometerListener.register()
-        }
+//        if (::accelerometerListener.isInitialized) {
+//            accelerometerListener.register()
+//        }
 
     }
 
     override fun onPause() {
         super.onPause()
-        accelerometerListener.unregister()
-        locationHelper.stopLocationUpdates()
-        timer.cancelTimer()
+
     }
 
     // For testing
-    private fun showFallDetectedDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Wykryt Wypadek")
-        builder.setMessage("Było wykryto wypadek. Wezwać pomoc?")
-        builder.setPositiveButton("Да") { _, _ ->
-            // Здесь можно добавить код для вызова помощи
-            // Например, отправка SMS с предупреждением о падении
-        }
-        builder.setNegativeButton("Нет") { _, _ ->
-            // Здесь можно добавить код для отмены вызова помощи
-            // Например, отправка SMS с отменой вызова
-        }
-        builder.show()
-    }
+
 
 
 
