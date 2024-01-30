@@ -13,6 +13,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -37,6 +38,9 @@ class BackgroundService : Service() {
     private lateinit var locationHelper: LocationHelper
     private lateinit var smsSender: SMS
     private lateinit var timer: Timer
+    private var mediaPlayer : MediaPlayer? = null
+    private var isMediaPlayerStarted : Boolean = false
+    private var isSecondMediaPlayerStarted : Boolean = false
 
 
     private var shakeTimerHandler = Handler(Looper.getMainLooper())
@@ -78,6 +82,8 @@ class BackgroundService : Service() {
         locationHelper = LocationHelper(this) { latitude, longitude ->
             if (checkLocation(latitude, longitude)) {
                 locationHelper.stopLocationUpdates()
+                isMediaPlayerStarted = false
+                isSecondMediaPlayerStarted = false
             }
         }
 
@@ -120,8 +126,17 @@ class BackgroundService : Service() {
 
 
     private fun onAccelerationChanged(acceleration: FloatArray) {
-        if (checkAcceleration(acceleration)) {
+        if (checkAcceleration(acceleration))
+        {
+
             startShakeTimer()
+
+
+                // Create a new MediaPlayer instance and start playing the specified MP3
+
+
+
+
         }
     }
 
@@ -133,6 +148,9 @@ class BackgroundService : Service() {
         shakeTimerRunnable = Runnable {
 //            showFallDetectedDialog()
             isTimerStarted = false
+
+
+
             locationHelper.requestLocationUpdates()
             shakeTimerRunnable = null
         }
@@ -192,7 +210,24 @@ class BackgroundService : Service() {
 
     }
 
+//    private fun SecondMediaPlayer(){
+//        if(!isSecondMediaPlayerStarted) {
+//
+//            isSecondMediaPlayerStarted = true
+//        }
+//    }
+
+    private fun MediaPlayer(){
+        if(!isMediaPlayerStarted) {
+            mediaPlayer = MediaPlayer.create(this, R.raw.impact_detected)
+            mediaPlayer?.start()
+            isMediaPlayerStarted = true
+        }
+    }
+
     private fun checkLocation(latitude: Double, longitude: Double): Boolean {
+
+
 
         if (lastLocation != null) {
             val deltaLatitude = abs(latitude - lastLocation!!.first)
@@ -216,9 +251,31 @@ class BackgroundService : Service() {
             }
             Log.d("GPS", "No location")
             lastLocation = Pair(latitude, longitude)
+
+
+
+
+
+//            if(!isMediaPlayerStarted) {
+//                mediaPlayer = MediaPlayer.create(this, R.raw.impact_detected)
+//                mediaPlayer?.start()
+//                isMediaPlayerStarted = true
+//            }
+//
+//            if(!isSecondMediaPlayerStarted){
+//                mediaPlayer = MediaPlayer.create(this, R.raw.to_stop_count_down)
+//                mediaPlayer?.start()
+//                isSecondMediaPlayerStarted = true
+//            }
+
+            MediaPlayer()
+//
+
+
             if (!isTimerStarted) {
                 val timer = Timer {
-
+                    mediaPlayer = MediaPlayer.create(this, R.raw.entering_sms_mode)
+                    mediaPlayer?.start()
                     smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
 
 
