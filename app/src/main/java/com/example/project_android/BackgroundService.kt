@@ -42,6 +42,11 @@ class BackgroundService : Service() {
     private lateinit var locationHelper: LocationHelper
     private lateinit var smsSender: SMS
     private lateinit var timer: Timer
+    private var coordinateLatitude : String = ""
+    private var coordinateLongtitude : String = ""
+
+
+    private var timerInstance: Timer? = null
     private var mediaPlayer : MediaPlayer? = null
     private var isMediaPlayerStarted : Boolean = false
     private var isSecondMediaPlayerStarted : Boolean = false
@@ -65,10 +70,7 @@ class BackgroundService : Service() {
         // Вызывается при старте службы
 
 
-        fun turnOFF(){
-            locationHelper.stopLocationUpdates()
-            timer.cancelTimer()
-        }
+
         if (intent?.action == "TURN_OFF_ACTION") {
             turnOFF()
         }
@@ -157,6 +159,7 @@ class BackgroundService : Service() {
 
                     } else if (spokenText == "help") {
                         smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
+                        turnOFF()
                         Log.d("SpeechHelp",  "Help is on the way!")
                     }
                 }
@@ -178,6 +181,14 @@ class BackgroundService : Service() {
 //        loadSelectedContact()
 
         return START_STICKY // Служба будет перезапущена в случае ее аварийной остановки
+    }
+
+
+    fun turnOFF(){
+        synchronized(this) {
+            locationHelper.stopLocationUpdates()
+            timerInstance?.cancelTimer()
+        }
     }
 
     override fun onDestroy() {
@@ -358,8 +369,13 @@ class BackgroundService : Service() {
                 return false
             }
             Log.d("GPS", "No location")
+            coordinateLatitude = latitude.toString()
+            coordinateLongtitude = longitude.toString()
+            Log.d("coordinateLatitude", coordinateLatitude)
+            Log.d("coordinateLongtitude", coordinateLongtitude)
             lastLocation = Pair(latitude, longitude)
 
+            ContactsDetails.message = ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLatitude"
 
             MediaPlayer()
             startSpeechTimer()
@@ -377,6 +393,7 @@ class BackgroundService : Service() {
                 }
                 isTimerStarted = true
                 timer.startTimer(count.toLong())
+                timerInstance = timer
 
                 return true
             }
