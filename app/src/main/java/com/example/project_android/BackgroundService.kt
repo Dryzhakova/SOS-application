@@ -187,6 +187,7 @@ class BackgroundService : Service() {
         locationHelper.stopLocationUpdates()
         timer.cancelTimer()
         speechRecognizer.destroy()
+        mediaPlayer?.release()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
