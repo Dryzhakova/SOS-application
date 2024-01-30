@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.SEND_SMS,
         Manifest.permission.READ_CONTACTS,
-        Manifest.permission.POST_NOTIFICATIONS
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.RECORD_AUDIO
     )
 
     // Для Android 14 и выше
@@ -61,7 +62,8 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.FOREGROUND_SERVICE_LOCATION,
         Manifest.permission.FOREGROUND_SERVICE,
         Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
-        Manifest.permission.POST_NOTIFICATIONS
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.RECORD_AUDIO
     )
 
     private val requestCodePermissions = 123

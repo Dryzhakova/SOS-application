@@ -13,10 +13,15 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.media.MediaPlayer
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -37,8 +42,13 @@ class BackgroundService : Service() {
     private lateinit var locationHelper: LocationHelper
     private lateinit var smsSender: SMS
     private lateinit var timer: Timer
+    private var mediaPlayer : MediaPlayer? = null
+    private var isMediaPlayerStarted : Boolean = false
+    private var isSecondMediaPlayerStarted : Boolean = false
+    private lateinit var speechRecognizer: SpeechRecognizer
 
-
+    private var SpeechTimeHandler = Handler(Looper.getMainLooper())
+    private var SpeechTimerRunnable : Runnable? = null
     private var shakeTimerHandler = Handler(Looper.getMainLooper())
     private var shakeTimerRunnable: Runnable? = null
     private var isTimerStarted: Boolean = false
@@ -53,12 +63,22 @@ class BackgroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Вызывается при старте службы
+
+
+        fun turnOFF(){
+            locationHelper.stopLocationUpdates()
+            timer.cancelTimer()
+        }
         if (intent?.action == "TURN_OFF_ACTION") {
             turnOFF()
         }
 
 
         Log.d("MainActivity", "Кракен готовится")
+
+
+        // start speech
+
 
 
 
@@ -78,6 +98,8 @@ class BackgroundService : Service() {
         locationHelper = LocationHelper(this) { latitude, longitude ->
             if (checkLocation(latitude, longitude)) {
                 locationHelper.stopLocationUpdates()
+                isMediaPlayerStarted = false
+                isSecondMediaPlayerStarted = false
             }
         }
 
@@ -97,8 +119,60 @@ class BackgroundService : Service() {
             createNotification()  // Создайте уведомление, которое будет отображаться в статус-баре
         startForeground(NOTIFICATION_ID, notification)
 
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
 
-        // Обработка случая, когда разрешения не получены
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {}
+
+            override fun onBeginningOfSpeech() {}
+
+            override fun onRmsChanged(rmsdB: Float) {}
+
+            override fun onBufferReceived(buffer: ByteArray?) {}
+
+            override fun onEndOfSpeech() {}
+
+            override fun onError(error: Int) {
+                // Handle speech recognition errors
+                when (error) {
+                    SpeechRecognizer.ERROR_NO_MATCH -> Log.d("Speech", "No match found")
+                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> Log.d("Speech", "Speech recognition timed out")
+                    // Add handling for other error cases as needed
+                    else -> Log.d("Speech", "Error: $error")
+                }
+            }
+
+
+            override fun onResults(results: Bundle?) {
+
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                matches?.let {
+                    val spokenText = it[0].toLowerCase()
+                    Log.d("Speech",  spokenText)
+
+                    // Check if the spoken text matches predefined phrases
+                    if (spokenText =="stop") {
+                        Log.d("Speech","Выполнено!")
+                        turnOFF()
+
+                    } else if (spokenText == "help") {
+                        smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
+                        Log.d("SpeechHelp",  "Help is on the way!")
+                    }
+                }
+            }
+            override fun onPartialResults(partialResults: Bundle?) {
+                // Handle partial speech recognition results
+                // Not used in this example but can be extended for continuous processing
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle?) {
+                // Handle additional recognition events (if needed)
+            }
+        })
+
+
+            // Обработка случая, когда разрешения не получены
 
 
 //        loadSelectedContact()
@@ -112,6 +186,7 @@ class BackgroundService : Service() {
         accelerometerListener.unregister()
         locationHelper.stopLocationUpdates()
         timer.cancelTimer()
+        speechRecognizer.destroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -120,11 +195,41 @@ class BackgroundService : Service() {
 
 
     private fun onAccelerationChanged(acceleration: FloatArray) {
-        if (checkAcceleration(acceleration)) {
+        if (checkAcceleration(acceleration))
+        {
+
             startShakeTimer()
+
+
+                // Create a new MediaPlayer instance and start playing the specified MP3
+
+
+
+
         }
     }
 
+
+    private fun startVoiceRecognition() {
+        // Start the voice recognition process
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak 'stop' or 'help'")
+
+        // Add a custom list of phrases to be recognized
+        val phrases = arrayListOf("stop", "help")
+        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true) // Optional: use offline recognition if available
+        intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, "en-US") // Optional: specify language preference
+
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-US")
+        intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true)
+
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+        intent.putExtra(RecognizerIntent.EXTRA_RESULTS, phrases.toTypedArray())
+
+        speechRecognizer.startListening(intent)
+    }
 //
 
     private fun startShakeTimer() {
@@ -133,11 +238,31 @@ class BackgroundService : Service() {
         shakeTimerRunnable = Runnable {
 //            showFallDetectedDialog()
             isTimerStarted = false
+
+
+
             locationHelper.requestLocationUpdates()
             shakeTimerRunnable = null
         }
 
         shakeTimerHandler.postDelayed(shakeTimerRunnable!!, 3000)
+    }
+
+
+    private fun startSpeechTimer() {
+        SpeechTimerRunnable?.let { SpeechTimeHandler.removeCallbacks(it) }
+
+        SpeechTimerRunnable = Runnable {
+//            showFallDetectedDialog()
+
+
+            startVoiceRecognition()
+
+
+            SpeechTimerRunnable = null
+        }
+
+        SpeechTimeHandler.postDelayed(SpeechTimerRunnable!!, 6500)
     }
 
     private fun checkAcceleration(acceleration: FloatArray): Boolean {
@@ -192,7 +317,24 @@ class BackgroundService : Service() {
 
     }
 
+//    private fun SecondMediaPlayer(){
+//        if(!isSecondMediaPlayerStarted) {
+//
+//            isSecondMediaPlayerStarted = true
+//        }
+//    }
+
+    private fun MediaPlayer(){
+        if(!isMediaPlayerStarted) {
+            mediaPlayer = MediaPlayer.create(this, R.raw.impact_detected)
+            mediaPlayer?.start()
+            isMediaPlayerStarted = true
+        }
+    }
+
     private fun checkLocation(latitude: Double, longitude: Double): Boolean {
+
+
 
         if (lastLocation != null) {
             val deltaLatitude = abs(latitude - lastLocation!!.first)
@@ -216,9 +358,16 @@ class BackgroundService : Service() {
             }
             Log.d("GPS", "No location")
             lastLocation = Pair(latitude, longitude)
+
+
+            MediaPlayer()
+            startSpeechTimer()
+
+
             if (!isTimerStarted) {
                 val timer = Timer {
-
+                    mediaPlayer = MediaPlayer.create(this, R.raw.entering_sms_mode)
+                    mediaPlayer?.start()
                     smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
 
 
@@ -268,10 +417,12 @@ class BackgroundService : Service() {
             return builder.build()
         }
 
-    private fun turnOFF(){
-        locationHelper.stopLocationUpdates()
-        timer.cancelTimer()
-    }
+
+
+
+
+
+
 }
 
 

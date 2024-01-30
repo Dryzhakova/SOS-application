@@ -48,7 +48,7 @@
                 android:summary="Adjust the duration for your timer"
                 android:defaultValue="10"
                 android:max="60"
-                android:progress="5"
+                android:progress="20"
                 app:showSeekBarValue="true"
                 android:dialogMessage="Adjust the accelerometer sensitivity"
                 />
