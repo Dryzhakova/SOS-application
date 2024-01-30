@@ -27,6 +27,13 @@
             android:dialogMessage="@string/preferences_gps_dialogmessage"
             />
 
+        <!-- Divider -->
+        <Preference
+            android:key="divider_preference"
+            android:layout="@layout/divider_layout"
+            />
+
+
     </PreferenceCategory>
     <PreferenceCategory android:title="Contacts and message">
         <Preference

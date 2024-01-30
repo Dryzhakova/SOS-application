@@ -2,7 +2,7 @@
 <resources>
 
     <style name="Theme.Project_Android" parent="android:Theme.Material.Light.NoActionBar" />
-    <style name="WhiteStyle" >
-        <item name="android:background">@color/white</item>
-    </style>
+    <style name="WhiteStyle" ><item name="android:background">@color/white</item></style>
+    <style name="BlueStyle" ><item name="android:background">#5197B6</item></style>
+
 </resources>

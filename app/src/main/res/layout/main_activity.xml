@@ -32,6 +32,7 @@
         android:id="@+id/gpsTextView"
         android:layout_width="176dp"
         android:layout_height="100dp"
+        android:layout_marginTop="100dp"
         android:layout_marginStart="32dp"
         android:gravity="center"
         android:text="GPS: Empty"
@@ -51,10 +52,10 @@
 
     <View
         android:id="@+id/blueRectangle"
-        android:layout_width="410dp"
+        android:layout_width="415dp"
         android:layout_height="3dp"
         android:layout_marginTop="10dp"
-        android:background="#00BCD4"
+        android:background="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/statusTextView" />
@@ -87,7 +88,7 @@
         android:layout_height="41dp"
         android:gravity="bottom"
         android:text="Fall down Alarm "
-        android:textSize="18dp"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -98,6 +99,7 @@
         android:layout_width="304dp"
         android:layout_height="55dp"
         android:layout_marginStart="152dp"
+        android:layout_marginTop="130dp"
         android:gravity="center"
         android:text="Acceleration: Empty"
         app:layout_constraintBottom_toBottomOf="parent"
