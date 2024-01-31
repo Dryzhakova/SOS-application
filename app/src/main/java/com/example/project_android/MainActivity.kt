@@ -111,8 +111,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showErrorNameMessage() {
         Toast.makeText(
-            this,
-            "Please select a contact in settings",
+            this,"Please select a contact in settings",
             Toast.LENGTH_SHORT
         ).show()
     }
