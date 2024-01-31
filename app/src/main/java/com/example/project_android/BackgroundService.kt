@@ -375,7 +375,7 @@ class BackgroundService : Service() {
             Log.d("coordinateLongtitude", coordinateLongtitude)
             lastLocation = Pair(latitude, longitude)
 
-            ContactsDetails.message = ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLatitude"
+            ContactsDetails.message = ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLongtitude"
 
             MediaPlayer()
             startSpeechTimer()
