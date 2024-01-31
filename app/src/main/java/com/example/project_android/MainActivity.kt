@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     private fun showErrorNameMessage() {
         Toast.makeText(
             this,
-            "Не вписаны номер телефона и сообщение",
+            "Please provide your phone number and your message",
             Toast.LENGTH_SHORT
         ).show()
     }
