@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
             stopBackgroundService()
         } else {
             if (checkPermissions()) {
-                if (ContactsDetails.number != "" && ContactsDetails.message != "") {
+                if (ContactsDetails.number != "") {
                     status.text = "Status: System turned ON"
                     startBackgroundService()
                     Log.d("MainActivity", "Kraken is on the hunt")
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     private fun showErrorNameMessage() {
         Toast.makeText(
             this,
-            "Не вписаны номер телефона и сообщение",
+            "Please select a contact in settings",
             Toast.LENGTH_SHORT
         ).show()
     }
