@@ -1,37 +1,31 @@
 package com.example.project_android
-
-
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import com.example.project_android.Accelerometer.AccelerometerListener
-import com.example.project_android.Location.LocationHelper
-import com.example.project_android.Message.SMS
 import android.Manifest
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.hardware.SensorManager
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
+import com.example.project_android.Accelerometer.AccelerometerListener
 import com.example.project_android.Contacts.ContactsDetails
+import com.example.project_android.Location.LocationHelper
+import com.example.project_android.Message.SMS
 import com.example.project_android.Timer.Timer
-import kotlin.math.abs
-import kotlin.math.sqrt
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -70,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var accelerometerListener: AccelerometerListener
     private lateinit var locationHelper: LocationHelper
+    private lateinit var gpsIndicator: ImageView
     private lateinit var smsSender: SMS
     private lateinit var timer: Timer
     // Elements of layout //
@@ -88,6 +83,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+
+        setTitle("SOOOOOOOOOOOOOOSI");
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -119,6 +116,10 @@ class MainActivity : AppCompatActivity() {
                 status.text = "System turned OFF"
                 val serviceIntent = Intent(this, BackgroundService::class.java)
                 stopService(serviceIntent)
+
+                gpsIndicator = findViewById(R.id.gpsIndicator)
+                gpsIndicator.setImageResource(R.drawable.button_off_gps)
+
             } else {
                 // Code to perform action when turning ON
                 if (checkPermissions()) {
@@ -126,6 +127,9 @@ class MainActivity : AppCompatActivity() {
                     val serviceIntent = Intent(this, BackgroundService::class.java)
                     startService(serviceIntent)
                     Log.d("MainActivity", "Kraken is on the hunt")
+
+                    gpsIndicator = findViewById(R.id.gpsIndicator)
+                    gpsIndicator.setImageResource(R.drawable.button_on_gps)
                 } else {
                     // Handle case when permissions are not granted
                 }

@@ -1,9 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="MainFront">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Status bar color. -->
 
+        <!-- Customize your theme here. -->
+    </style>
     <style name="Theme.Project_Android" parent="android:Theme.Material.Light.NoActionBar" />
     <style name="WhiteStyle" ><item name="android:background">@color/white</item></style>
     <style name="BlueStyle" ><item name="android:background">#5197B6</item></style>
     <style name="TealStyle" ><item name="android:background">@color/teal_200</item></style>
+    <style name="BlackStyle" ><item name="android:background">@color/black</item></style>
+    <style name="PurpleStyleDark" ><item name="android:background">#4E0101</item></style>
+    <style name="Red200Style" ><item name="android:background">#731616</item></style>
+    <style name="PurpleStyleLight" ><item name="android:background">#BC0404</item></style>
+    <style name="GreenText" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">#00FF00</item>
+    </style>
+
+
+
 
 </resources>

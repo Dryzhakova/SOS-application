@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_light"
+   android:theme="@style/BlackStyle"
     tools:context=".MainActivity">
 
     <!-- Ваши элементы пользовательского интерфейса здесь -->
@@ -19,43 +19,50 @@
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <ImageView
-        android:id="@+id/imageMap"
-        android:layout_width="243dp"
-        android:layout_height="172dp"
-        android:layout_centerInParent="true"
-        android:layout_marginTop="56dp"
-        android:src="@mipmap/nav_map_round"
+        android:id="@+id/gpsIndicator"
+        android:layout_width="55dp"
+        android:layout_height="62dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/button_off_gps"
+        app:layout_constraintBottom_toBottomOf="@+id/gpsTextView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusTextView" />
+        app:layout_constraintTop_toTopOf="@+id/gpsTextView" />
+
+    <ImageView
+        android:id="@+id/accelerationIndicator"
+        android:layout_width="55dp"
+        android:layout_height="62dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/button_off_acceleration"
+        app:layout_constraintBottom_toBottomOf="@+id/accTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/accTextView" />
 
     <TextView
         android:id="@+id/gpsTextView"
-        android:layout_width="176dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginStart="32dp"
-        android:gravity="center"
-        android:text="GPS: Empty"
+        android:layout_width="328dp"
+        android:layout_height="87dp"
+        android:layout_marginBottom="240dp"
+        android:background="@drawable/circleoff"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="120dp"
+        android:text="GPS"
+        android:textColor="@color/white"
+        android:textSize="40dp"
+        android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageMap"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <ImageView
-        android:id="@+id/imageAgility"
-        android:layout_width="243dp"
-        android:layout_height="172dp"
-        android:layout_marginTop="128dp"
-        android:src="@mipmap/nav_agility_round"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusTextView" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/gpsIndicator"
+        app:layout_constraintTop_toBottomOf="@+id/statusTextView"
+        app:layout_constraintVertical_bias="0.505" />
 
     <View
         android:id="@+id/blueRectangle"
         android:layout_width="415dp"
         android:layout_height="3dp"
         android:layout_marginTop="10dp"
-        android:background="@color/blue"
+        android:background="#880F0F"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/statusTextView" />
@@ -65,12 +72,26 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="#880F0F"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
+    <TextView
+        android:id="@+id/accTextView"
+        android:layout_width="304dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="148dp"
+        android:text="Acceleration"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="20dp"
+        android:textColor="@color/white"
+        android:textSize="40dp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gpsTextView" />
     <Button
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
@@ -80,7 +101,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.52"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/accTextView" />
 
     <TextView
         android:id="@+id/statusTextView"
@@ -88,23 +110,13 @@
         android:layout_height="41dp"
         android:gravity="bottom"
         android:text="Fall down Alarm "
+        android:textColor="@color/red_front_midl"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageFallMan" />
 
-    <TextView
-        android:id="@+id/accTextView"
-        android:layout_width="304dp"
-        android:layout_height="55dp"
-        android:layout_marginStart="152dp"
-        android:layout_marginTop="130dp"
-        android:gravity="center"
-        android:text="Acceleration: Empty"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageAgility"
-        app:layout_constraintVertical_bias="0.628" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
