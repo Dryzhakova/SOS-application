@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="accelerometer_sensitivity_entries">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Very High</item>
+    </array>
+
+    <array name="accelerometer_sensitivity_values">
+        <item>1</item>
+        <item>5</item>
+        <item>10</item>
+        <item>50</item>
+    </array>
+
+    <array name="gps_sensitivity_entries">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Very High</item>
+    </array>
+
+    <array name="gps_sensitivity_values">
+        <item>1</item>
+        <item>10</item>
+        <item>100</item>
+        <item>1000</item>
+    </array>
+
+    <array name="timer_values">
+        <item>10</item>
+        <item>20</item>
+        <item>40</item>
+        <item>60</item>
+    </array>
+</resources>

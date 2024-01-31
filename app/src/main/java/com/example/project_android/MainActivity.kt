@@ -175,6 +175,4 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-    // Other lifecycle methods...
 }

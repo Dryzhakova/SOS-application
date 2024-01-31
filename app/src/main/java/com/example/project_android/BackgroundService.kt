@@ -40,6 +40,7 @@ class BackgroundService : Service() {
     private var shakeTimerRunnable: Runnable? = null
     private var isTimerStarted: Boolean = false
     private var isAccelerationDetected: Boolean = false
+    private var isListening: Boolean = false
 
     private var lastAcceleration: FloatArray? = null
     private var lastLocation: Pair<Double, Double>? = null
@@ -49,6 +50,9 @@ class BackgroundService : Service() {
         private const val NOTIFICATION_ID = 1
         private const val TURN_OFF_ACTION = "TURN_OFF_ACTION"
     }
+
+    // Location update interval
+    private val LOCATION_UPDATE_INTERVAL = 10 * 60 * 1000 // 10 minutes
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == TURN_OFF_ACTION) {
@@ -69,7 +73,7 @@ class BackgroundService : Service() {
 
         locationHelper = LocationHelper(this) { latitude, longitude ->
             if (checkLocation(latitude, longitude)) {
-                locationHelper.stopLocationUpdates()
+                stopLocationUpdates()
                 isMediaPlayerStarted = false
             }
         }
@@ -99,11 +103,10 @@ class BackgroundService : Service() {
             override fun onEndOfSpeech() {}
 
             override fun onError(error: Int) {
-                // Handle speech recognition errors
+                // Handling speech recognition errors
                 when (error) {
                     SpeechRecognizer.ERROR_NO_MATCH -> Log.d("Speech", "No match found")
                     SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> Log.d("Speech", "Speech recognition timed out")
-                    // Add handling for other error cases as needed
                     else -> Log.d("Speech", "Error: $error")
                 }
             }
@@ -134,18 +137,18 @@ class BackgroundService : Service() {
                             Log.d("SpeechHelp", "Help is on the way!")
                         }
                         else -> {
-                            // Handle other cases if needed
+                            // Handle other cases
                         }
                     }
                 }
             }
+
             override fun onPartialResults(partialResults: Bundle?) {
                 // Handle partial speech recognition results
-                // Not used in this example but can be extended for continuous processing
             }
 
             override fun onEvent(eventType: Int, params: Bundle?) {
-                // Handle additional recognition events (if needed)
+                // Handle additional recognition events
             }
         })
 
@@ -154,18 +157,18 @@ class BackgroundService : Service() {
 
     private fun turnOFF() {
         synchronized(this) {
-            locationHelper.stopLocationUpdates()
+            stopLocationUpdates()
             timerInstance?.cancelTimer()
-            stopSelf()  // Add this line to stop the service
+            stopSelf()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         accelerometerListener.unregister()
-        locationHelper.stopLocationUpdates()
+        stopLocationUpdates()
         timer.cancelTimer()
-        speechRecognizer.destroy()
+        stopSpeechRecognition()
         mediaPlayer?.release()
     }
 
@@ -173,31 +176,23 @@ class BackgroundService : Service() {
         return null
     }
 
-    private fun playImpactSound() {
-        // Release the previous MediaPlayer instance
+    // Release MediaPlayer resources immediately after use
+    private fun playSound(resourceId: Int) {
         mediaPlayer?.release()
-
-        // Create a new MediaPlayer instance
-        mediaPlayer = MediaPlayer.create(this, R.raw.impact_detected)
+        mediaPlayer = MediaPlayer.create(this, resourceId)
         mediaPlayer?.start()
+    }
+
+    private fun playImpactSound() {
+        playSound(R.raw.impact_detected)
     }
 
     private fun playTimerStoppedSound() {
-        // Release the previous MediaPlayer instance
-        mediaPlayer?.release()
-
-        // Create a new MediaPlayer instance
-        mediaPlayer = MediaPlayer.create(this, R.raw.timer_stopped)
-        mediaPlayer?.start()
+        playSound(R.raw.timer_stopped)
     }
 
     private fun playEnteringSOSModeSound() {
-        // Release the previous MediaPlayer instance
-        mediaPlayer?.release()
-
-        // Create a new MediaPlayer instance
-        mediaPlayer = MediaPlayer.create(this, R.raw.entering_sos_mode)
-        mediaPlayer?.start()
+        playSound(R.raw.entering_sos_mode)
     }
 
     private fun onAccelerationChanged(acceleration: FloatArray) {
@@ -206,48 +201,65 @@ class BackgroundService : Service() {
         }
     }
 
-    private fun startVoiceRecognition() {
-        // Start the voice recognition process
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak 'stop' or 'help'")
+    private fun startSpeechRecognition() {
+        if (!isListening) {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak 'stop' or 'help'")
 
-        // Add a custom list of phrases to be recognized
-        val phrases = arrayListOf("stop", "help")
-        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true) // Optional: use offline recognition if available
-        intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, "en-US") // Optional: specify language preference
+            // Add a custom list of phrases to be recognized
+            val phrases = arrayListOf("stop", "help")
+            intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true) // Optional: use offline recognition if available
+            intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, "en-US") // Optional: specify language preference
 
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-US")
-        intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true)
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-US")
+            intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true)
 
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
-        intent.putExtra(RecognizerIntent.EXTRA_RESULTS, phrases.toTypedArray())
+            intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+            intent.putExtra(RecognizerIntent.EXTRA_RESULTS, phrases.toTypedArray())
 
-        speechRecognizer.startListening(intent)
+            speechRecognizer.startListening(intent)
+            isListening = true
+        }
+    }
+
+
+    private fun stopSpeechRecognition() {
+        if (isListening) {
+            speechRecognizer.stopListening()
+            isListening = false
+        }
+    }
+
+    private fun startLocationUpdates() {
+        locationHelper.requestLocationUpdates()
+    }
+
+    private fun stopLocationUpdates() {
+        locationHelper.stopLocationUpdates()
     }
 
     private fun startShakeTimer() {
         shakeTimerRunnable?.let { shakeTimerHandler.removeCallbacks(it) }
 
         shakeTimerRunnable = Runnable {
-            locationHelper.requestLocationUpdates()
+            startLocationUpdates()
             shakeTimerRunnable = null
         }
 
-        shakeTimerHandler.postDelayed(shakeTimerRunnable!!, 3000)
+        shakeTimerHandler.postDelayed(shakeTimerRunnable!!, 5000)
     }
 
     private fun startSpeechTimer() {
-
         SpeechTimerRunnable?.let { SpeechTimeHandler.removeCallbacks(it) }
 
         SpeechTimerRunnable = Runnable {
-            startVoiceRecognition()
+            startSpeechRecognition()
             SpeechTimerRunnable = null
         }
 
-        SpeechTimeHandler.postDelayed(SpeechTimerRunnable!!, 6500)
+        SpeechTimeHandler.postDelayed(SpeechTimerRunnable!!, 6000)
     }
 
     private fun checkAcceleration(acceleration: FloatArray): Boolean {
@@ -287,7 +299,7 @@ class BackgroundService : Service() {
     }
 
     private fun checkLocation(latitude: Double, longitude: Double): Boolean {
-        if (lastLocation != null) {
+        if (lastLocation != null && isAccelerationDetected) {
             val deltaLatitude = abs(latitude - lastLocation!!.first)
             val deltaLongitude = abs(longitude - lastLocation!!.second)
 
@@ -295,14 +307,16 @@ class BackgroundService : Service() {
             val gpsSensitivity: Double =
                 (preferences.getInt("gps_sensitivity", 10) * 0.00001)
 
-            val count : Int = ((preferences.getInt("set_timer", 10) + 5)* 1000)
+            val count: Int = ((preferences.getInt("set_timer", 10) + 6) * 1000)
             Log.d("Message", count.toString())
 
             if (deltaLatitude > gpsSensitivity || deltaLongitude > gpsSensitivity) {
-                // Изменились данные GPS
+                // Changed GPS data
                 lastLocation = Pair(latitude, longitude)
                 isAccelerationDetected = false
 
+                // Stop location updates when outside the sensitivity
+                stopLocationUpdates()
 
                 // For Testing
                 Log.d("GPS", "Сработало GPS!")
@@ -315,11 +329,11 @@ class BackgroundService : Service() {
             Log.d("coordinateLongtitude", coordinateLongitude)
             lastLocation = Pair(latitude, longitude)
 
-            ContactsDetails.message = ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLongitude"
+            ContactsDetails.message =
+                ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLongitude"
 
             playImpactSound()
             startSpeechTimer()
-
 
             if (!isTimerStarted) {
                 val timer = Timer {
@@ -332,10 +346,9 @@ class BackgroundService : Service() {
 
                 return true
             }
-
         }
 
-        // Сохраняем текущие значения координат
+        // Save current coordinates
         lastLocation = Pair(latitude, longitude)
 
         return false
