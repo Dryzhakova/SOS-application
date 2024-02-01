@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var status: TextView
     private lateinit var manIndicator: ImageView
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -84,7 +85,7 @@ class MainActivity : AppCompatActivity() {
 
         // Register a BroadcastReceiver
         val intentFilter = IntentFilter("updateViewModelAction")
-        registerReceiver(viewModelUpdateReceiver, intentFilter)
+        registerReceiver(viewModelUpdateReceiver, intentFilter, RECEIVER_NOT_EXPORTED)
 
         // Initialize SharedPreferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
