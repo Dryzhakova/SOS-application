@@ -23,9 +23,14 @@ class LocationHelper(context: Context, private val onLocationChanged: (Double, D
 
     fun requestLocationUpdates() {
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                0 * 1000, // 1 sec
+                0f,
+                locationListener
+            )
         } catch (e: SecurityException) {
-            // Обработка ошибки
+            // Handle the security exception
         }
     }
 

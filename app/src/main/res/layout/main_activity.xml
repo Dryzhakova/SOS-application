@@ -4,9 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/lightmilk"
+    android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+
     tools:context=".MainActivity">
 
     <!-- Ваши элементы пользовательского интерфейса здесь -->
+
+    <ImageView
+        android:id="@+id/imageFallMan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/fallingman"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/toolbar" />
+
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -17,52 +32,41 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
     <Button
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="188dp"
+        android:padding="16dp"
+        android:gravity="center|center_vertical"
+        style="@style/RoundedButtStyle"
+        android:background="@drawable/rawwbl_butt"
         android:text="Toggle"
+        android:stateListAnimator="@null"
+        android:translationZ="4dp"
+        android:textSize="26dp"
+        android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/statusTextView"
+        app:layout_constraintVertical_bias="0.4" />
+
 
     <TextView
         android:id="@+id/statusTextView"
-        android:layout_width="140dp"
-        android:layout_height="108dp"
-        android:layout_marginTop="100dp"
-        android:gravity="center"
-        android:text="Status: System turned OFF"
-        app:layout_constraintBottom_toTopOf="@+id/accTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="bottom"
+        android:paddingTop="10dp"
+        android:text="System: OFF"
+        android:textColor="@color/black"
+        android:textSize="20dp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.042" />
+        app:layout_constraintTop_toBottomOf="@+id/imageFallMan" />
 
-    <TextView
-        android:id="@+id/accTextView"
-        android:layout_width="304dp"
-        android:layout_height="55dp"
-        android:layout_marginBottom="52dp"
-        android:gravity="center"
-        android:text="Acceleration: Empty"
-        app:layout_constraintBottom_toTopOf="@+id/gpsTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
-        app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/gpsTextView"
-        android:layout_width="304dp"
-        android:layout_height="58dp"
-        android:layout_marginBottom="56dp"
-        android:gravity="center"
-        android:text="GPS: Empty"
-        app:layout_constraintBottom_toTopOf="@+id/toggleButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
-        app:layout_constraintStart_toStartOf="parent" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
