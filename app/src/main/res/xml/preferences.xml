@@ -1,5 +1,6 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="Sensitivity">
 
@@ -28,15 +29,25 @@
             />
     </PreferenceCategory>
 
+    <!-- Divider -->
+    <Preference
+        android:key="divider_preference"
+
+        />
+
+
+
     <PreferenceCategory android:title="Contacts and message">
         <Preference
             android:key="contacts_button"
+            android:icon="@drawable/nav_phone"
             android:title="Choose contact"
             android:summary="Tap to configure contacts" />
 
         <EditTextPreference
             android:defaultValue=""
             android:key="message_text"
+            android:icon="@drawable/message"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="Edit message" />

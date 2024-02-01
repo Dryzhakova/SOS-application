@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.example.project_android.Contacts.ContactsDetails
 import android.Manifest
+import android.widget.ImageView
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,6 +55,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toggleButton: Button
     private lateinit var status: TextView
     private lateinit var gpsTextView: TextView
+    private lateinit var gpsIndicator: ImageView
+    private lateinit var accIndicator: ImageView
+    private lateinit var manIndicator: ImageView
     private lateinit var accTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,12 +87,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun toggleSystem() {
         if (isTimerStarted) {
-            status.text = "Status: System turned OFF"
+            status.text = "System OFF"
+            gpsIndicator = findViewById(R.id.gpsIndicator)
+            gpsIndicator.setImageResource(R.drawable.button_off_gps)
+            accIndicator = findViewById<ImageView>(R.id.accelerationIndicator)
+            accIndicator.setImageResource(R.drawable.button_off_acceleration)
+            manIndicator = findViewById<ImageView>(R.id.imageFallMan)
+            manIndicator.setImageResource(R.drawable.fallingman)
             stopBackgroundService()
         } else {
             if (checkPermissions()) {
-                if (ContactsDetails.number != "") {
-                    status.text = "Status: System turned ON"
+                if (ContactsDetails.number != "" && ContactsDetails.message != "") {
+                    status.text = "System ON"
+                    gpsIndicator = findViewById(R.id.gpsIndicator)
+                    gpsIndicator.setImageResource(R.drawable.button_on_gps)
+                    accIndicator = findViewById<ImageView>(R.id.accelerationIndicator)
+                    accIndicator.setImageResource(R.drawable.button_on_acceleration)
+                    manIndicator = findViewById<ImageView>(R.id.imageFallMan)
+                    manIndicator.setImageResource(R.drawable.man_saved)
                     startBackgroundService()
                     Log.d("MainActivity", "Kraken is on the hunt")
                 } else {

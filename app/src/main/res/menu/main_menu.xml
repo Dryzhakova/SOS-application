@@ -5,6 +5,8 @@
     <item
         android:title="Settings"
         android:id="@+id/action_settings"
-        app:showAsAction="never"
+        android:icon="@drawable/nav_settings"
+        app:showAsAction="ifRoom"
         />
 </menu>
+    <!--  android:icon="@drawable/nav_settings"-->

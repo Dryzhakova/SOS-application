@@ -12,6 +12,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.widget.ImageView
 import androidx.core.app.NotificationCompat
 import com.example.project_android.Accelerometer.AccelerometerListener
 import com.example.project_android.Contacts.ContactsDetails
@@ -48,13 +49,12 @@ class BackgroundService : Service() {
     private var lastLocation: Pair<Double, Double>? = null
     private lateinit var sharedPreferences: SharedPreferences
 
+    private lateinit var gpsIndicator: ImageView
+
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val TURN_OFF_ACTION = "TURN_OFF_ACTION"
     }
-
-    // Location update interval
-    private val LOCATION_UPDATE_INTERVAL = 10 * 60 * 1000 // 10 minutes
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == TURN_OFF_ACTION) {
