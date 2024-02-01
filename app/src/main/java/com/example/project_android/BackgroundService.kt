@@ -190,6 +190,9 @@ class BackgroundService : Service() {
         timer.cancelTimer()
         stopSpeechRecognition()
         mediaPlayer?.release()
+        isStopped = true
+        isSignalingMode = false
+        timerInstance?.cancelTimer()
     }
 
     private fun updateViewModel(value: Boolean) {
