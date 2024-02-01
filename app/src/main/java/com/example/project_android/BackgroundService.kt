@@ -41,6 +41,8 @@ class BackgroundService : Service() {
     private var isTimerStarted: Boolean = false
     private var isAccelerationDetected: Boolean = false
     private var isListening: Boolean = false
+    private var isSignalingMode: Boolean = false
+    private var isStopped: Boolean = false
 
     private var lastAcceleration: FloatArray? = null
     private var lastLocation: Pair<Double, Double>? = null
@@ -122,19 +124,23 @@ class BackgroundService : Service() {
                     // Check if the spoken text matches predefined phrases
                     when (spokenText) {
                         "stop" -> {
-                            Log.d("Speech", "Выполнено!")
-                            playTimerStoppedSound()
-                            Handler(Looper.getMainLooper()).postDelayed({
+                            if (!isStopped) {
+                                Log.d("Speech", "Выполнено!")
                                 turnOFF()
-                            }, 1000)
+                            }
                         }
                         "help" -> {
-                            playEnteringSOSModeSound()
-                            smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                turnOFF()
-                            }, 3000)
-                            Log.d("SpeechHelp", "Help is on the way!")
+                            if (!isStopped){
+                                playEnteringSOSModeSound()
+                                smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
+                                stopLocationUpdates()
+                                timerInstance?.cancelTimer()
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    isSignalingMode = true
+                                    startSignalingMode()
+                                }, 3000)
+                                Log.d("SpeechHelp", "Help is on the way!")
+                            }
                         }
                         else -> {
                             // Handle other cases
@@ -156,10 +162,17 @@ class BackgroundService : Service() {
     }
 
     private fun turnOFF() {
-        synchronized(this) {
+        if (!isStopped) {
+            isSignalingMode = false
+            isStopped = true
             stopLocationUpdates()
             timerInstance?.cancelTimer()
-            stopSelf()
+            playTimerStoppedSound()
+            synchronized(this) {
+                Handler(Looper.getMainLooper()).postDelayed({
+                    stopSelf()
+                }, 1700)
+            }
         }
     }
 
@@ -188,7 +201,7 @@ class BackgroundService : Service() {
     }
 
     private fun playTimerStoppedSound() {
-        playSound(R.raw.timer_stopped)
+        playSound(R.raw.disabling_safety_mode)
     }
 
     private fun playEnteringSOSModeSound() {
@@ -263,20 +276,22 @@ class BackgroundService : Service() {
     }
 
     private fun checkAcceleration(acceleration: FloatArray): Boolean {
-        if (lastAcceleration != null && !isAccelerationDetected) {
-            val accelerationChange = calculateAccelerationChange(acceleration, lastAcceleration!!)
+        if (!isSignalingMode){
+            if (lastAcceleration != null && !isAccelerationDetected) {
+                val accelerationChange = calculateAccelerationChange(acceleration, lastAcceleration!!)
 
-            val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-            val accelerometerSensitivity: Int = preferences.getInt("accelerometer_sensitivity", 5)
+                val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+                val accelerometerSensitivity: Int = preferences.getInt("accelerometer_sensitivity", 5)
 
-            if (accelerationChange > accelerometerSensitivity) {
-                lastAcceleration = acceleration
-                isAccelerationDetected = true
-                return true
+                if (accelerationChange > accelerometerSensitivity) {
+                    lastAcceleration = acceleration
+                    isAccelerationDetected = true
+                    return true
+                }
             }
+            lastAcceleration = acceleration
+            return false
         }
-
-        lastAcceleration = acceleration
         return false
     }
 
@@ -299,58 +314,68 @@ class BackgroundService : Service() {
     }
 
     private fun checkLocation(latitude: Double, longitude: Double): Boolean {
-        if (lastLocation != null && isAccelerationDetected) {
-            val deltaLatitude = abs(latitude - lastLocation!!.first)
-            val deltaLongitude = abs(longitude - lastLocation!!.second)
+        if (!isSignalingMode) {
+            if (lastLocation != null && isAccelerationDetected) {
+                val deltaLatitude = abs(latitude - lastLocation!!.first)
+                val deltaLongitude = abs(longitude - lastLocation!!.second)
 
-            val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-            val gpsSensitivity: Double =
-                (preferences.getInt("gps_sensitivity", 10) * 0.00001)
+                val preferences: SharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                val gpsSensitivity: Double =
+                    (preferences.getInt("gps_sensitivity", 10) * 0.00001)
 
-            val count: Int = ((preferences.getInt("set_timer", 10) + 6) * 1000)
-            Log.d("Message", count.toString())
+                val count: Int = ((preferences.getInt("set_timer", 10) + 6) * 1000)
+                Log.d("Message", count.toString())
 
-            if (deltaLatitude > gpsSensitivity || deltaLongitude > gpsSensitivity) {
-                // Changed GPS data
+                if (deltaLatitude > gpsSensitivity || deltaLongitude > gpsSensitivity) {
+                    // Changed GPS data
+                    lastLocation = Pair(latitude, longitude)
+                    isAccelerationDetected = false
+
+                    // Stop location updates when outside the sensitivity
+                    stopLocationUpdates()
+
+                    // For Testing
+                    Log.d("GPS", "Сработало GPS!")
+                    return false
+                }
+                Log.d("GPS", "No location")
+                coordinateLatitude = latitude.toString()
+                coordinateLongitude = longitude.toString()
+                Log.d("coordinateLatitude", coordinateLatitude)
+                Log.d("coordinateLongtitude", coordinateLongitude)
                 lastLocation = Pair(latitude, longitude)
-                isAccelerationDetected = false
 
-                // Stop location updates when outside the sensitivity
-                stopLocationUpdates()
+                ContactsDetails.message =
+                    ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLongitude"
 
-                // For Testing
-                Log.d("GPS", "Сработало GPS!")
-                return false
+                playImpactSound()
+                startSpeechTimer()
+
+                if (!isTimerStarted) {
+                    val timer = Timer {
+                        playEnteringSOSModeSound()
+                        smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
+                        stopLocationUpdates()
+                        timerInstance?.cancelTimer()
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            isSignalingMode = true
+                            startSignalingMode()
+                        }, 3000)
+                    }
+                    isTimerStarted = true
+                    timer.startTimer(count.toLong())
+                    timerInstance = timer
+
+                    return true
+                }
             }
-            Log.d("GPS", "No location")
-            coordinateLatitude = latitude.toString()
-            coordinateLongitude = longitude.toString()
-            Log.d("coordinateLatitude", coordinateLatitude)
-            Log.d("coordinateLongtitude", coordinateLongitude)
+
+            // Save current coordinates
             lastLocation = Pair(latitude, longitude)
 
-            ContactsDetails.message =
-                ContactsDetails.message + "\nCoordinates: $coordinateLatitude,$coordinateLongitude"
-
-            playImpactSound()
-            startSpeechTimer()
-
-            if (!isTimerStarted) {
-                val timer = Timer {
-                    playEnteringSOSModeSound()
-                    smsSender.sendSMS(ContactsDetails.message, ContactsDetails.number)
-                }
-                isTimerStarted = true
-                timer.startTimer(count.toLong())
-                timerInstance = timer
-
-                return true
-            }
+            return false
         }
-
-        // Save current coordinates
-        lastLocation = Pair(latitude, longitude)
-
         return false
     }
 
@@ -369,16 +394,71 @@ class BackgroundService : Service() {
         }
 
         val notificationIntent = Intent(this, BackgroundService::class.java)
-        notificationIntent.action = TURN_OFF_ACTION
-        val pendingIntent =
-            PendingIntent.getService(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+        val turnOffIntent = PendingIntent.getService(
+            this,
+            0,
+            notificationIntent.setAction(TURN_OFF_ACTION),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val turnOffAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_turn_off,
+            "Stop",
+            turnOffIntent
+        ).build()
 
         val builder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Foreground Service")
             .setContentText("Service is running in foreground")
             .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentIntent(pendingIntent)
+            .addAction(turnOffAction)
 
         return builder.build()
     }
+
+
+    private fun startSignalingMode() {
+        if (isSignalingMode){
+            // Check if the MediaPlayer is not already started
+            if (!isMediaPlayerStarted) {
+                val signalingSoundResourceId = R.raw.alarm
+
+                // Set the signaling interval in milliseconds
+                val signalingInterval = 12000 // 1 minute
+
+                // Start playing the signaling sound at intervals
+                startMediaPlayerWithInterval(signalingSoundResourceId, signalingInterval.toLong())
+            }
+        }
+    }
+
+    private fun startMediaPlayerWithInterval(resourceId: Int, interval: Long) {
+        if (isSignalingMode) {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer.create(this, resourceId)
+
+            val alarmHandler = Handler(Looper.getMainLooper())
+
+            val alarmRunnable = object : Runnable {
+                override fun run() {
+                    mediaPlayer?.start()
+                }
+            }
+
+            mediaPlayer?.setOnCompletionListener {
+                // Release resources when playback completes
+                mediaPlayer?.release()
+                mediaPlayer = MediaPlayer.create(this, resourceId)
+
+                // Schedule the next play at the specified interval
+                Handler(Looper.getMainLooper()).postDelayed({
+                    startSignalingMode()
+                }, interval)
+            }
+
+            // Start the initial playback
+            alarmHandler.post(alarmRunnable)
+        }
+    }
+
 }
