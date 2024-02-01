@@ -3,7 +3,11 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="Sensitivity">
-
+        <!-- Divider -->
+        <Preference
+            android:key="divider_preference"
+            android:layout="@layout/divider_layout_light"
+            />
         <!-- Accelerometer Sensitivity -->
         <SeekBarPreference
             android:key="accelerometer_sensitivity"
@@ -32,17 +36,17 @@
     <!-- Divider -->
     <Preference
         android:key="divider_preference"
-
+        android:layout="@layout/divider_layout"
         />
 
-
-
     <PreferenceCategory android:title="Contacts and message">
+
         <Preference
             android:key="contacts_button"
             android:icon="@drawable/nav_phone"
             android:title="Choose contact"
             android:summary="Tap to configure contacts" />
+
 
         <EditTextPreference
             android:defaultValue=""
@@ -51,6 +55,7 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="Edit message" />
+
         <PreferenceCategory android:title="Timer">
 
             <SeekBarPreference
