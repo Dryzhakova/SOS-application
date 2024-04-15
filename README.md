@@ -56,4 +56,4 @@ If no further movement is detected the application will notify the user that an 
 If the user does not stop the countdown, the application will enter the SOS mode. It will send an sms to the selected contact with user's message and location and start signaling:
 <br />
 <br />
-<img src="https://github.com/Hererra/Project_Android_2024/assets/99400189/9d15df13-8dd9-41fc-9ea4-66a4c17f0d76.png" data-canonical-src="https://github.com/Hererra/Project_Android_2024/assets/99400189/9d15df13-8dd9-41fc-9ea4-66a4c17f0d76.png" width="400" height="900" />\
+<img src="https://github.com/Hererra/Project_Android_2024/assets/99400189/9d15df13-8dd9-41fc-9ea4-66a4c17f0d76.png" data-canonical-src="https://github.com/Hererra/Project_Android_2024/assets/99400189/9d15df13-8dd9-41fc-9ea4-66a4c17f0d76.png" width="400" height="900" />
